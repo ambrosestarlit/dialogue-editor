@@ -2,6 +2,7 @@
 const app = {
     currentProject: null,
     characters: [],
+    pricePerChar: 3, // デフォルト単価
     
     init() {
         this.loadRecentProjects();
@@ -12,6 +13,7 @@ const app = {
     setupEventListeners() {
         const editor = document.getElementById('contentEditor');
         const projectNameInput = document.getElementById('projectNameInput');
+        const priceInput = document.getElementById('pricePerChar');
         
         if (editor) {
             editor.addEventListener('input', () => {
@@ -22,6 +24,14 @@ const app = {
         
         if (projectNameInput) {
             projectNameInput.addEventListener('input', () => {
+                this.autoSave();
+            });
+        }
+
+        if (priceInput) {
+            priceInput.addEventListener('input', () => {
+                this.pricePerChar = parseFloat(priceInput.value) || 0;
+                this.updatePriceStats();
                 this.autoSave();
             });
         }
@@ -46,13 +56,16 @@ const app = {
         
         this.currentProject = name;
         this.characters = [];
+        this.pricePerChar = 3;
         
         document.getElementById('projectNameInput').value = name;
         document.getElementById('contentEditor').value = '';
+        document.getElementById('pricePerChar').value = 3;
         
         this.hideWelcome();
         this.updateCharacterButtons();
         this.updateStats();
+        this.updatePriceStats();
         this.saveProject();
         this.showStatus(`プロジェクト「${name}」を作成しました`);
     },
@@ -98,13 +111,16 @@ const app = {
         
         this.currentProject = name;
         this.characters = project.characters || [];
+        this.pricePerChar = project.pricePerChar || 3;
         
         document.getElementById('projectNameInput').value = project.name || name;
         document.getElementById('contentEditor').value = project.content || '';
+        document.getElementById('pricePerChar').value = this.pricePerChar;
         
         this.hideWelcome();
         this.updateCharacterButtons();
         this.updateStats();
+        this.updatePriceStats();
         this.showStatus(`プロジェクト「${name}」を読み込みました`);
     },
 
@@ -117,6 +133,7 @@ const app = {
             name: projectName,
             content: document.getElementById('contentEditor').value,
             characters: this.characters,
+            pricePerChar: this.pricePerChar,
             lastModified: new Date().toISOString()
         };
         
@@ -138,6 +155,7 @@ const app = {
                 name: projectName,
                 content: document.getElementById('contentEditor').value,
                 characters: this.characters,
+                pricePerChar: this.pricePerChar,
                 lastModified: new Date().toISOString()
             };
             
@@ -157,6 +175,7 @@ const app = {
             name: projectName,
             content: document.getElementById('contentEditor').value,
             characters: this.characters,
+            pricePerChar: this.pricePerChar,
             lastModified: new Date().toISOString(),
             exportDate: new Date().toISOString(),
             version: '1.0'
@@ -249,12 +268,12 @@ const app = {
         const list = document.getElementById('recentProjectsList');
         const projects = this.getRecentProjects();
         
-        list.innerHTML = '';
-        
         if (projects.length === 0) {
-            list.innerHTML = '<div style="text-align: center; color: #999; padding: 20px; font-size: 12px;">最近使用したプロジェクトはありません</div>';
+            list.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">プロジェクトがありません</div>';
             return;
         }
+        
+        list.innerHTML = '';
         
         projects.forEach(project => {
             const item = document.createElement('div');
@@ -299,6 +318,7 @@ const app = {
         
         this.updateCharacterButtons();
         this.updateStats();
+        this.updatePriceStats();
         this.autoSave();
         this.showStatus(`キャラクター「${name}」を追加しました`);
     },
@@ -309,6 +329,7 @@ const app = {
         this.characters = this.characters.filter(c => c !== name);
         this.updateCharacterButtons();
         this.updateStats();
+        this.updatePriceStats();
         this.autoSave();
         this.showStatus(`キャラクター「${name}」を削除しました`);
     },
@@ -321,12 +342,13 @@ const app = {
         const before = text.substring(0, start);
         const after = text.substring(end);
         
-        const insert = `${name}：　`;
+        const insert = `${name}：`;
         editor.value = before + insert + after;
         editor.selectionStart = editor.selectionEnd = start + insert.length;
         editor.focus();
         
         this.updateStats();
+        this.updatePriceStats();
         this.autoSave();
     },
 
@@ -368,6 +390,7 @@ const app = {
         editor.focus();
         
         this.updateStats();
+        this.updatePriceStats();
         this.autoSave();
     },
 
@@ -411,6 +434,7 @@ const app = {
         
         editor.value = processed.join('\n');
         this.updateStats();
+        this.updatePriceStats();
         this.autoSave();
         this.showStatus(`${counter - 1}行に連番を付与しました`);
     },
@@ -477,6 +501,60 @@ const app = {
             `;
             statsGrid.appendChild(statItem);
         });
+
+        // 料金統計も更新
+        this.updatePriceStats();
+    },
+
+    // ================ 料金統計機能 ================
+    
+    updatePriceStats() {
+        const content = document.getElementById('contentEditor').value;
+        const lines = content.split('\n');
+        
+        // キャラクターごとの文字数と料金を計算
+        const charStats = {};
+        this.characters.forEach(name => {
+            charStats[name] = 0;
+        });
+        
+        lines.forEach(line => {
+            this.characters.forEach(name => {
+                // "名前：" のパターンにマッチする行を検出
+                const pattern = new RegExp(`^\\d{0,3}\\s*${name}：(.*)$`);
+                const match = line.match(pattern);
+                if (match) {
+                    // セリフ部分の文字数をカウント（括弧を除く）
+                    const dialogue = match[1].replace(/[()（）]/g, '');
+                    charStats[name] += dialogue.length;
+                }
+            });
+        });
+        
+        // UIを更新
+        const priceGrid = document.getElementById('priceGrid');
+        priceGrid.innerHTML = '';
+        
+        let totalPrice = 0;
+        
+        // キャラクター別の料金を追加
+        this.characters.forEach(name => {
+            const charCount = charStats[name];
+            const price = Math.floor(charCount * this.pricePerChar);
+            totalPrice += price;
+            
+            const priceItem = document.createElement('div');
+            priceItem.className = 'price-item';
+            priceItem.innerHTML = `
+                <div class="price-item-label">${name}</div>
+                <div class="price-item-chars">${charCount}文字</div>
+                <div class="price-item-value">¥${price.toLocaleString()}</div>
+            `;
+            priceGrid.appendChild(priceItem);
+        });
+        
+        // 合計料金を更新
+        document.getElementById('priceTotal').textContent = `¥${totalPrice.toLocaleString()}`;
     },
 
     // ================ ユーティリティ ================

@@ -262,20 +262,23 @@
         }
         .char-btn {
             padding: 6px 12px;
-            background: #8b6a5b;
+            background: #7c5b53;
             color: white;
             border: none;
             border-radius: 3px;
             cursor: pointer;
-            font-size: 12px;
             position: relative;
+            font-size: 12px;
+        }
+        .char-btn:hover {
+            background: #8b6a5b;
         }
         .char-btn-delete {
             position: absolute;
             top: -5px;
             right: -5px;
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             background: #b85a6b;
             color: white;
             border: none;
@@ -355,6 +358,90 @@
             margin-top: 2px;
         }
 
+        /* 料金パネル */
+        .price-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .price-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #7c5b53;
+            margin-bottom: 8px;
+        }
+        .price-input-box {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .price-input-label {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .price-input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .price-input {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #c4a88b;
+            border-radius: 3px;
+            font-size: 14px;
+            text-align: right;
+        }
+        .price-unit {
+            font-size: 12px;
+            color: #666;
+        }
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+        }
+        .price-item {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .price-item-label {
+            font-size: 10px;
+            color: #666;
+        }
+        .price-item-chars {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+        .price-item-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #7c5b53;
+            margin-top: 4px;
+        }
+        .price-total {
+            background: #7c5b53;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            margin-top: 8px;
+        }
+        .price-total-label {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        .price-total-value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
         /* ステータスバー */
         .status-bar { 
             background: linear-gradient(to right, #d4b89b, #c4a88b); 
@@ -382,6 +469,9 @@
                 grid-template-columns: repeat(2, 1fr);
             }
             .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .price-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
@@ -414,6 +504,9 @@
                 grid-template-columns: 1fr;
             }
             .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .price-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
@@ -525,6 +618,23 @@
                             <div class="stat-value" id="statDuration">0分00秒</div>
                             <div class="stat-sub" id="statDurationSub">240字=1分</div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- 料金パネル -->
+                <div class="price-panel">
+                    <div class="price-title">依頼料金一覧</div>
+                    <div class="price-input-box">
+                        <div class="price-input-label">単価設定</div>
+                        <div class="price-input-group">
+                            <input type="number" id="pricePerChar" class="price-input" value="3" min="0" step="0.1">
+                            <span class="price-unit">円 / 文字</span>
+                        </div>
+                    </div>
+                    <div class="price-grid" id="priceGrid"></div>
+                    <div class="price-total">
+                        <div class="price-total-label">合計料金</div>
+                        <div class="price-total-value" id="priceTotal">¥0</div>
                     </div>
                 </div>
                 
