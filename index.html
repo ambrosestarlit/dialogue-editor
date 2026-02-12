@@ -349,6 +349,11 @@
             font-weight: bold;
             color: #7c5b53;
         }
+        .stat-sub {
+            font-size: 9px;
+            color: #999;
+            margin-top: 2px;
+        }
 
         /* ステータスバー */
         .status-bar { 
@@ -502,6 +507,7 @@
                         
                     </div>
                     <button class="character-add-btn" onclick="app.saveProject()">💾 保存</button>
+                <button class="character-add-btn" onclick="app.exportProject()">📦 プロジェクト書き出し</button>
                 <button class="character-add-btn" onclick="app.exportTxt()">📄 TXT</button>
                 <button class="character-add-btn" onclick="app.returnToWelcome()">🏠プロジェクト一覧</button>
                 </div>
@@ -513,6 +519,11 @@
                         <div class="stat-item">
                             <div class="stat-label">総文字数</div>
                             <div class="stat-value" id="statTotal">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">目安の尺</div>
+                            <div class="stat-value" id="statDuration">0分00秒</div>
+                            <div class="stat-sub" id="statDurationSub">240字=1分</div>
                         </div>
                     </div>
                 </div>

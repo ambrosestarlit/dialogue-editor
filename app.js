@@ -145,6 +145,36 @@ const app = {
         }, 2000);
     },
 
+    exportProject() {
+        if (!this.currentProject) {
+            this.showStatus('プロジェクトが開かれていません');
+            return;
+        }
+        
+        const projectName = document.getElementById('projectNameInput').value || this.currentProject;
+        
+        const project = {
+            name: projectName,
+            content: document.getElementById('contentEditor').value,
+            characters: this.characters,
+            lastModified: new Date().toISOString(),
+            exportDate: new Date().toISOString(),
+            version: '1.0'
+        };
+        
+        const jsonString = JSON.stringify(project, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${projectName}.dep`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        this.showStatus('プロジェクトファイルを書き出しました');
+        alert(`プロジェクトファイル「${projectName}.dep」を書き出しました。\n\nこのファイルを他のデバイスで読み込むことで、同じデータで作業できます。`);
+    },
+
     exportTxt() {
         if (!this.currentProject) {
             this.showStatus('プロジェクトが開かれていません');
@@ -166,13 +196,13 @@ const app = {
     },
 
     returnToWelcome() {
-        if (confirm('プロジェクトをウェルカム画面に戻りますか？\n（現在の内容は自動保存されています）')) {
+        if (confirm('プロジェクトをウェルカム画面に戻りますか?\n(現在の内容は自動保存されています)')) {
             this.showWelcome();
         }
     },
 
     deleteProject(name) {
-        if (!confirm(`プロジェクト「${name}」を削除しますか？`)) return;
+        if (!confirm(`プロジェクト「${name}」を削除しますか?`)) return;
         
         localStorage.removeItem(`dialogue_project_${name}`);
         const projects = this.getRecentProjects().filter(p => p.name !== name);
@@ -274,7 +304,7 @@ const app = {
     },
 
     removeCharacter(name) {
-        if (!confirm(`キャラクター「${name}」を削除しますか？`)) return;
+        if (!confirm(`キャラクター「${name}」を削除しますか?`)) return;
         
         this.characters = this.characters.filter(c => c !== name);
         this.updateCharacterButtons();
@@ -397,6 +427,11 @@ const app = {
         // 行数
         const lineCount = lines.length;
         
+        // 目安の尺を計算（240字=1分）
+        const minutes = Math.floor(totalChars / 240);
+        const seconds = Math.floor(((totalChars % 240) / 240) * 60);
+        const durationText = `${minutes}分${String(seconds).padStart(2, '0')}秒`;
+        
         // キャラクターごとの文字数を計算
         const charStats = {};
         this.characters.forEach(name => {
@@ -420,14 +455,17 @@ const app = {
         document.getElementById('totalCharCount').textContent = totalChars;
         document.getElementById('lineCount').textContent = lineCount;
         document.getElementById('statTotal').textContent = totalChars;
+        document.getElementById('statDuration').textContent = durationText;
         
         // キャラクター別統計を更新
         const statsGrid = document.getElementById('statsGrid');
         
-        // 総文字数の要素を保持
-        const totalStatElement = statsGrid.querySelector('.stat-item');
+        // 総文字数と尺の要素を保持
+        const totalStatElement = statsGrid.children[0];
+        const durationStatElement = statsGrid.children[1];
         statsGrid.innerHTML = '';
         statsGrid.appendChild(totalStatElement);
+        statsGrid.appendChild(durationStatElement);
         
         // キャラクター別の統計を追加
         this.characters.forEach(name => {
