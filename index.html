@@ -464,6 +464,7 @@
                 flex-direction: column;
                 gap: 10px;
                 min-width: 300px;
+                overflow-y: auto;
             }
             .character-inputs {
                 grid-template-columns: repeat(2, 1fr);
@@ -496,6 +497,13 @@
             .main-content {
                 padding: 8px;
                 gap: 8px;
+            }
+            .editor-panel {
+                min-height: 300px; /* 本文入力欄の最小高さを確保 */
+            }
+            .right-column {
+                max-height: 400px; /* 右カラムの最大高さを制限 */
+                overflow-y: auto; /* スクロール可能にする */
             }
             .editor-textarea {
                 font-size: 16px; /* iOSのズーム防止 */
