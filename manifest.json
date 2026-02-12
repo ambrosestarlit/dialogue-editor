@@ -1,0 +1,24 @@
+{
+  "name": "Dialogue Editor",
+  "short_name": "Dialogue",
+  "description": "2人掛け合いシナリオエディタ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e7d0a9",
+  "theme_color": "#7c5b53",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Icon Generator</title>
+</head>
+<body>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    <script>
+        // 192x192 アイコン
+        const canvas192 = document.getElementById('canvas192');
+        const ctx192 = canvas192.getContext('2d');
+        
+        // 背景
+        ctx192.fillStyle = '#7c5b53';
+        ctx192.fillRect(0, 0, 192, 192);
+        
+        // 白い吹き出し風デザイン
+        ctx192.fillStyle = '#ffffff';
+        ctx192.beginPath();
+        ctx192.arc(60, 70, 40, 0, Math.PI * 2);
+        ctx192.fill();
+        ctx192.beginPath();
+        ctx192.arc(130, 70, 40, 0, Math.PI * 2);
+        ctx192.fill();
+        
+        // テキスト
+        ctx192.fillStyle = '#e7d0a9';
+        ctx192.font = 'bold 48px sans-serif';
+        ctx192.textAlign = 'center';
+        ctx192.fillText('DE', 96, 150);
+        
+        // 512x512 アイコン
+        const canvas512 = document.getElementById('canvas512');
+        const ctx512 = canvas512.getContext('2d');
+        
+        // 背景
+        ctx512.fillStyle = '#7c5b53';
+        ctx512.fillRect(0, 0, 512, 512);
+        
+        // 白い吹き出し風デザイン
+        ctx512.fillStyle = '#ffffff';
+        ctx512.beginPath();
+        ctx512.arc(160, 200, 100, 0, Math.PI * 2);
+        ctx512.fill();
+        ctx512.beginPath();
+        ctx512.arc(350, 200, 100, 0, Math.PI * 2);
+        ctx512.fill();
+        
+        // テキスト
+        ctx512.fillStyle = '#e7d0a9';
+        ctx512.font = 'bold 120px sans-serif';
+        ctx512.textAlign = 'center';
+        ctx512.fillText('DE', 256, 380);
+        
+        // ダウンロード用リンクを生成
+        setTimeout(() => {
+            const link192 = document.createElement('a');
+            link192.download = 'icon-192.png';
+            link192.href = canvas192.toDataURL();
+            link192.textContent = 'Download 192x192 icon';
+            document.body.appendChild(link192);
+            document.body.appendChild(document.createElement('br'));
+            
+            const link512 = document.createElement('a');
+            link512.download = 'icon-512.png';
+            link512.href = canvas512.toDataURL();
+            link512.textContent = 'Download 512x512 icon';
+            document.body.appendChild(link512);
+        }, 100);
+    </script>
+</body>
+</html>

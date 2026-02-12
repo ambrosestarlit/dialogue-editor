@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dialogue Editor">
+    <link rel="manifest" href="manifest.json">
+    <title>Dialogue Editor - 2人掛け合いシナリオエディタ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: "MS Gothic", "Hiragino Kaku Gothic Pro", monospace; 
+            background: #e7d0a9; 
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        /* ウェルカム画面 */
+        .welcome-screen { 
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.2);
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 1000;
+        }
+        .welcome-container {
+            background: #e7d0a9;
+            border: 2px solid #7c5b53;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .welcome-header {
+            background: #7c5b53;
+            padding: 20px;
+            text-align: center;
+        }
+        .welcome-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        .welcome-subtitle {
+            font-size: 12px;
+            color: #e7d0a9;
+            margin-top: 5px;
+        }
+        .welcome-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .welcome-section {
+            margin-bottom: 20px;
+        }
+        .welcome-section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #7c5b53;
+            margin-bottom: 10px;
+        }
+        .welcome-action-btn {
+            width: 100%;
+            padding: 12px;
+            background: #7c5b53;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        .welcome-action-btn:hover {
+            background: #8b6a5b;
+        }
+        .welcome-recent-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .welcome-recent-item:hover {
+            background: #f5f5f5;
+        }
+        .welcome-recent-info {
+            flex: 1;
+        }
+        .welcome-recent-name {
+            font-weight: bold;
+            font-size: 14px;
+            color: #7c5b53;
+        }
+        .welcome-recent-date {
+            font-size: 11px;
+            color: #999;
+        }
+        .welcome-recent-delete {
+            background: #b85a6b;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* メインアプリ */
+        .app-container { 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            background-color: #e7d0a9; 
+        }
+        .header { 
+            background: linear-gradient(to right, #7c5b53, #a0795f); 
+            color: white; 
+            padding: 8px 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 14px; 
+        }
+        .header-title {
+            font-weight: bold;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .header-btn {
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 3px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .header-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* トップパネル */
+        .top-panel { 
+            background: #e7d0a9;
+            padding: 10px; 
+        }
+        .project-name-box {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .project-name-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #7c5b53;
+            margin-bottom: 5px;
+        }
+        .project-name-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #c4a88b;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* ツールバー */
+        .toolbar { 
+            background: linear-gradient(to right, #d4b89b, #c4a88b); 
+            padding: 8px; 
+            display: flex; 
+            gap: 5px; 
+            flex-wrap: wrap;
+            overflow-x: auto;
+        }
+        .toolbar-btn { 
+            padding: 6px 12px; 
+            background: #7c5b53; 
+            color: white; 
+            border: none; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            white-space: nowrap;
+            font-size: 12px;
+        }
+        .toolbar-btn:active {
+            background: #8b6a5b;
+        }
+        .toolbar-separator { 
+            width: 1px; 
+            background: #7c5b53; 
+            opacity: 0.3;
+        }
+
+        /* メインコンテンツ */
+        .main-content { 
+            flex: 1; 
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+            padding: 10px;
+            gap: 10px;
+        }
+
+        /* キャラクター登録パネル */
+        .character-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .character-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #7c5b53;
+            margin-bottom: 8px;
+        }
+        .character-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .character-input-group {
+            display: flex;
+            gap: 4px;
+        }
+        .character-input {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #c4a88b;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .character-add-btn {
+            padding: 6px 10px;
+            background: #7c5b53;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .character-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .char-btn {
+            padding: 6px 12px;
+            background: #8b6a5b;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            position: relative;
+        }
+        .char-btn-delete {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            background: #b85a6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            display: none;
+        }
+        .char-btn:hover .char-btn-delete {
+            display: block;
+        }
+
+        /* エディタパネル */
+        .editor-panel { 
+            flex: 1;
+            background: white; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .editor-toolbar { 
+            background: #f8f8f8; 
+            border-bottom: 1px solid #e0e0e0; 
+            padding: 8px; 
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .editor-textarea { 
+            flex: 1; 
+            font-family: "MS Gothic", monospace; 
+            font-size: 14px; 
+            border: none; 
+            padding: 10px; 
+            resize: none; 
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        /* 統計パネル */
+        .stats-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .stats-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #7c5b53;
+            margin-bottom: 8px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+        }
+        .stat-item {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+        }
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #7c5b53;
+        }
+
+        /* ステータスバー */
+        .status-bar { 
+            background: linear-gradient(to right, #d4b89b, #c4a88b); 
+            padding: 5px 10px; 
+            font-size: 11px; 
+            color: #666; 
+        }
+
+        /* デスクトップ用レイアウト */
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+            }
+            .editor-panel {
+                flex: 2;
+            }
+            .right-column {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                min-width: 300px;
+            }
+            .character-inputs {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* モバイル用調整 */
+        @media (max-width: 767px) {
+            .header {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            .header-btn {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            .toolbar {
+                padding: 6px;
+            }
+            .toolbar-btn {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+            .main-content {
+                padding: 8px;
+                gap: 8px;
+            }
+            .editor-textarea {
+                font-size: 16px; /* iOSのズーム防止 */
+            }
+            .character-inputs {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* タッチデバイス用の調整 */
+        @media (hover: none) and (pointer: coarse) {
+            .toolbar-btn,
+            .char-btn,
+            .header-btn {
+                min-height: 44px; /* タップしやすいサイズ */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ウェルカム画面 -->
+    <div id="welcomeScreen" class="welcome-screen">
+        <div class="welcome-container">
+            <div class="welcome-header">
+                <div class="welcome-title">Dialogue Editor</div>
+                <div class="welcome-subtitle">少人数掛け合い特化のシナリオエディター</div>
+            </div>
+            <div class="welcome-body">
+                <div class="welcome-section">
+                    <div class="welcome-section-title">新規作成</div>
+                    <button class="welcome-action-btn" onclick="app.createNewProject()">📝 新しいプロジェクトを作成</button>
+                </div>
+                <div class="welcome-section">
+                    <div class="welcome-section-title">開く</div>
+                    <button class="welcome-action-btn" onclick="app.loadProjectDialog()">📂 プロジェクトを読み込み</button>
+                </div>
+                <div class="welcome-section">
+                    <div class="welcome-section-title">最近使用したプロジェクト</div>
+                    <div id="recentProjectsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- メインアプリ -->
+    <div id="mainApp" class="app-container" style="display: none;">
+        <!-- ヘッダー -->
+        <div class="header">
+            <div class="header-title">Dialogue Editor</div>
+            
+        </div>
+
+        <!-- トップパネル -->
+        <div class="top-panel">
+            <div class="project-name-box">
+                <div class="project-name-label">プロジェクト名</div>
+                <input type="text" id="projectNameInput" class="project-name-input" placeholder="プロジェクト名を入力...">
+            </div>
+        </div>
+
+        <!-- ツールバー -->
+        <div class="toolbar">
+            <div class="character-buttons" id="characterButtons"></div>
+            
+            <div class="toolbar-separator"></div>
+            <button class="toolbar-btn" onclick="app.insertStageDirection()">// ト書き</button>
+            <button class="toolbar-btn" onclick="app.insertScene()">〇 シーン</button>
+            <button class="toolbar-btn" onclick="app.insertBlackout()">【暗転】</button>
+            <button class="toolbar-btn" onclick="app.insertNumbering()">台詞番号を振る</button>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="main-content">
+            <!-- エディタパネル -->
+            <div class="editor-panel">
+                <div class="editor-toolbar">
+                    <span>文字数: <strong id="totalCharCount">0</strong></span>
+                    <span>行数: <strong id="lineCount">0</strong></span>
+                </div>
+                <textarea id="contentEditor" class="editor-textarea" placeholder="ここにシナリオを入力してください..."></textarea>
+            </div>
+
+            <!-- 右カラム（デスクトップ時のみ） -->
+            <div class="right-column">
+                <!-- キャラクター登録パネル -->
+                <div class="character-panel">
+                    <div class="character-title">キャラクター登録</div>
+                    <div class="character-inputs">
+                        <div class="character-input-group">
+                            <input type="text" id="charInput1" class="character-input" placeholder="名前" maxlength="20">
+                            <button class="character-add-btn" onclick="app.addCharacter(0)">追加</button>
+                        </div>
+                        
+                    </div>
+                    <button class="character-add-btn" onclick="app.saveProject()">💾 保存</button>
+                <button class="character-add-btn" onclick="app.exportTxt()">📄 TXT</button>
+                <button class="character-add-btn" onclick="app.returnToWelcome()">🏠プロジェクト一覧</button>
+                </div>
+
+                <!-- 統計パネル -->
+                <div class="stats-panel">
+                    <div class="stats-title">文字数統計</div>
+                    <div class="stats-grid" id="statsGrid">
+                        <div class="stat-item">
+                            <div class="stat-label">総文字数</div>
+                            <div class="stat-value" id="statTotal">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- ステータスバー -->
+        <div class="status-bar">
+            <span id="statusText">プロジェクト: 新規</span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
